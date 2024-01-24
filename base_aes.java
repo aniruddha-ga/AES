@@ -27,7 +27,7 @@ public class base_aes
     try   
     {  
       /* Declare a byte array. */  
-      byte[] iv = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};  
+      byte[] iv = new byte[16];  
       IvParameterSpec ivspec = new IvParameterSpec(iv);        
       /* Create factory for secret keys. */  
       SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");  
@@ -54,7 +54,7 @@ public class base_aes
     try   
     {  
       /* Declare a byte array. */  
-      byte[] iv = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};  
+      byte[] iv = new byte[16];  
       IvParameterSpec ivspec = new IvParameterSpec(iv);  
       /* Create factory for secret keys. */  
       SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");  
