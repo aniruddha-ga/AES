@@ -70,15 +70,12 @@ public class base_aes
     {  
       /* Declare a byte array. */  
       byte[] iv = new byte[16];  
-      byte[] encryptedData = null;
 
       try (FileInputStream fis = new FileInputStream("encrypted_data.dat")) {
             // Read the IV (16 bytes)
             fis.read(iv);
             IvParameterSpec ivSpec = new IvParameterSpec(iv);
 
-            // Read the rest of the file as encrypted data
-            encryptedData = fis.readAllBytes();
       } catch (IOException | Exception e) {
             e.printStackTrace();  // Print the stack trace for debugging
       }
