@@ -33,7 +33,7 @@ public class base_aes
     {  
       /* Declare a byte array. */  
       SecureRandom secureRandom = new SecureRandom();
-      byte[] iv = new byte[16]; 
+      byte[] iv = new byte[16];
       secureRandom.nextBytes(iv);
       try (FileOutputStream fos = new FileOutputStream("encrypted_data.dat")) {
             // Write the IV (16 bytes)
@@ -69,11 +69,13 @@ public class base_aes
     try   
     {  
       /* Declare a byte array. */  
-      byte[] iv = new byte[16];  
+      byte[] iv = new byte[16];
+      byte[] tempIv = new byte[16];
 
       try (FileInputStream fis = new FileInputStream("encrypted_data.dat")) {
             // Read the IV (16 bytes)
-            fis.read(iv);
+            fis.read(tempIv);
+            System.arraycopy(tempIv, 0, iv, 0, 16);
             IvParameterSpec ivSpec = new IvParameterSpec(iv);
 
       } catch (IOException | Exception e) {
