@@ -11,15 +11,20 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;  
 import java.security.spec.InvalidKeySpecException;  
 import java.security.spec.KeySpec;  
+import java.security.SecureRandom;
 import java.util.Base64;  
 import javax.crypto.BadPaddingException;  
 import javax.crypto.IllegalBlockSizeException;  
-import javax.crypto.NoSuchPaddingException;  
+import javax.crypto.NoSuchPaddingException;
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+
 public class base_aes   
 {  
     /* Private variable declaration */  
-    private static final String SECRET_KEY = "123456789";  
-    private static final String SALTVALUE = "abcdefg";  
+    private static String SECRET_KEY = null;  
+    private static String SALTVALUE = null;  
    
     /* Encryption Method */  
     public static String encrypt(String strToEncrypt)   
@@ -27,7 +32,17 @@ public class base_aes
     try   
     {  
       /* Declare a byte array. */  
-      byte[] iv = new byte[16];  
+      SecureRandom secureRandom = new SecureRandom();
+      byte[] iv = new byte[16]; 
+      secureRandom.nextBytes(iv);
+      try (FileOutputStream fos = new FileOutputStream("encrypted_data.dat")) {
+            // Write the IV (16 bytes)
+            fos.write(iv);
+            // Write the encrypted data (ciphertext)
+            fos.write(encrypted);
+      } catch (IOException | Exception e) {
+            e.printStackTrace();  // Print the stack trace for debugging
+      }
       IvParameterSpec ivspec = new IvParameterSpec(iv);        
       /* Create factory for secret keys. */  
       SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");  
@@ -35,7 +50,7 @@ public class base_aes
       KeySpec spec = new PBEKeySpec(SECRET_KEY.toCharArray(), SALTVALUE.getBytes(), 65536, 256);  
       SecretKey tmp = factory.generateSecret(spec);  
       SecretKeySpec secretKey = new SecretKeySpec(tmp.getEncoded(), "AES");  
-      Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");  
+      Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");  
       cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivspec);  
       /* Retruns encrypted value. */  
       return Base64.getEncoder()  
@@ -55,14 +70,25 @@ public class base_aes
     {  
       /* Declare a byte array. */  
       byte[] iv = new byte[16];  
-      IvParameterSpec ivspec = new IvParameterSpec(iv);  
+      byte[] encryptedData = null;
+
+      try (FileInputStream fis = new FileInputStream("encrypted_data.dat")) {
+            // Read the IV (16 bytes)
+            fis.read(iv);
+            IvParameterSpec ivSpec = new IvParameterSpec(iv);
+
+            // Read the rest of the file as encrypted data
+            encryptedData = fis.readAllBytes();
+      } catch (IOException | Exception e) {
+            e.printStackTrace();  // Print the stack trace for debugging
+      }
       /* Create factory for secret keys. */  
       SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");  
       /* PBEKeySpec class implements KeySpec interface. */  
       KeySpec spec = new PBEKeySpec(SECRET_KEY.toCharArray(), SALTVALUE.getBytes(), 65536, 256);  
       SecretKey tmp = factory.generateSecret(spec);  
       SecretKeySpec secretKey = new SecretKeySpec(tmp.getEncoded(), "AES");  
-      Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");  
+      Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");  
       cipher.init(Cipher.DECRYPT_MODE, secretKey, ivspec);  
       /* Retruns decrypted value. */  
       return new String(cipher.doFinal(Base64.getDecoder().decode(strToDecrypt)));  
@@ -77,15 +103,39 @@ public class base_aes
     public static void main(String[] args)   
     {  
         /* Message to be encrypted. */  
-        String originalval = "AES Encryption";  
+        Scanner scanner = new Scanner(System.in);
+
+        // Prompt the user for a secret key
+        System.out.print("Enter the secret key: ");
+        String secretKeyInput = scanner.nextLine();
+
+        // Prompt the user for a salt value
+        System.out.print("Enter the salt value: ");
+        String saltValueInput = scanner.nextLine();
+
+        // Prompt the user for a message
+        System.out.print("Enter the message: ");
+        String message = scanner.nextLine();
+
+        // Print the user input for confirmation (optional)
+        System.out.println("\n--- User Input Summary ---");
+        System.out.println("Secret Key: " + secretKey);
+        System.out.println("Salt Value: " + saltValue);
+        System.out.println("Message: " + message);
+
+        // Close the scanner
+        scanner.close();
+
+        SECRET_KEY = secretKeyInput;
+        SALTVALUE = saltValueInput;
         /* Call the encrypt() method and store result of encryption. */  
-        String encryptedval = encrypt(originalval);  
+        String encryptedval = encrypt(message);  
         /* Call the decrypt() method and store result of decryption. */  
         String decryptedval = decrypt(encryptedval);  
         /* Display the original message, encrypted message and decrypted message on the console. */  
-        System.out.println("Original value: " + originalval);  
-        System.out.println("Encrypted value: " + encryptedval);  
-        System.out.println("Decrypted value: " + decryptedval);  
+        System.out.println("Original message: " + message);  
+        System.out.println("Encrypted message: " + encryptedval);  
+        System.out.println("Decrypted message: " + decryptedval);  
     }  
 }  
 
